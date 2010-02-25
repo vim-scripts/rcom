@@ -1,0 +1,28 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=2991
+
+The rcom ftplugin uses the RCom interface (http://rcom.univie.ac.at)
+to the R Statistical Package (http://www.r-project.org) for sending 
+code to a running instance of R. This way any R snippet can be easily 
+evaluated in that instance of R GUI.
+
+After installation, interaction with R via rcom is enabled for all
+buffers with filetype r. For other filetypes, you can use the
+functions |rcom#EvaluateInBuffer()|.
+
+Features:
+
+    - Evaluate R code
+    - Omnicompletion for R
+    - Maps for normal, visual, and insert mode
+    - Keyword map (|K|)
+    - Operator
+
+Normal usage~
+
+    1. Start an instance of R GUI and load the image you want.
+    2. Open an R source file in VIM.
+    3. Type <c-cr> to evaluate the current line/visual area in R.
+    4. Type [count]+ or +{motion} to evaluate some text in R. (You can 
+       type ++ to invoke |+|.)
+
+Full docs: http://github.com/tomtom/rcom_vim/blob/master/doc/rcom.txt

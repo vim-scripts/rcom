@@ -2,8 +2,8 @@
 " @Author:      Thomas Link (mailto:micathom AT gmail com?subject=[vim])
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2010-02-23.
-" @Last Change: 2010-02-25.
-" @Revision:    0.1.108
+" @Last Change: 2010-03-08.
+" @Revision:    0.1.113
 " GetLatestVimScripts: 0 0 :AutoInstall: rcom.vim
 
 let s:save_cpo = &cpo
@@ -59,11 +59,11 @@ nnoremap <buffer> K :call rcom#Keyword()<cr>
 " if !hasmapto(':call rcom#EvaluateInBuffer(', 'n')
 if !empty(g:rcom_map)
     " exec 'nnoremap <buffer> '. g:rcom_map .' vip:call rcom#EvaluateInBuffer(getline(''.''), "")<cr>}'
-    exec 'nnoremap <buffer> '. g:rcom_map .' :call rcom#EvaluateInBuffer(getline(''.''), "")<cr>gj'
+    exec 'nnoremap <buffer> '. g:rcom_map .' :call rcom#EvaluateInBuffer(getline(''.''), "")<cr>j'
 endif
 if !empty(g:rcom_mapp)
     " exec 'nnoremap <buffer> '. g:rcom_mapp .' vip:call rcom#EvaluateInBuffer(getline(''.''), "p")<cr>}'
-    exec 'nnoremap <buffer> '. g:rcom_mapp .' :call rcom#EvaluateInBuffer(getline(''.''), "p")<cr>gj'
+    exec 'nnoremap <buffer> '. g:rcom_mapp .' :call rcom#EvaluateInBuffer(getline(''.''), "p")<cr>j'
 endif
 " endif
 " if !hasmapto(':call rcom#EvaluateInBuffer(', 'i')
@@ -76,10 +76,10 @@ endif
 " endif
 " if !hasmapto(':call rcom#EvaluateInBuffer(', 'vsx')
 if !empty(g:rcom_map)
-    exec 'vnoremap <buffer> '. g:rcom_map .' :call rcom#EvaluateInBuffer(rcom#GetSelection(), "")<cr>'
+    exec 'vnoremap <buffer> '. g:rcom_map .' :call rcom#EvaluateInBuffer(rcom#GetSelection("v"), "")<cr>'
 endif
 if !empty(g:rcom_mapp)
-    exec 'vnoremap <buffer> '. g:rcom_mapp .' :call rcom#EvaluateInBuffer(rcom#GetSelection(), "p")<cr>'
+    exec 'vnoremap <buffer> '. g:rcom_mapp .' :call rcom#EvaluateInBuffer(rcom#GetSelection("v"), "p")<cr>'
 endif
 " endif
 
@@ -92,23 +92,24 @@ if !empty(g:rcom_mapop)
     endif
     exec 'nnoremap <buffer> '. g:rcom_mapop .' :set opfunc=rcom#Operator<cr>g@'
     exec 'nnoremap <buffer> '. g:rcom_mapop .'. :call rcom#EvaluateInBuffer(getline(''.''), b:rcom_mode)<cr>'
-    exec 'xnoremap <buffer> '. g:rcom_mapop .' :call rcom#EvaluateInBuffer(rcom#GetSelection(), b:rcom_mode)<cr>'
+    exec 'xnoremap <buffer> '. g:rcom_mapop .' :call rcom#EvaluateInBuffer(rcom#GetSelection("v"), b:rcom_mode)<cr>'
     exec 'nnoremap <buffer> '. g:rcom_mapop .'p :let b:rcom_mode = b:rcom_mode == "p" ? "" : "p" \| redraw \| echom "RCom: Printing turned ". (b:rcom_mode == "p" ? "on" : "off")<cr>'
     exec 'nnoremap <buffer> '. g:rcom_mapop .'l :call rcom#LogBuffer()<cr>'
+    exec 'nnoremap <buffer> '. g:rcom_mapop .'t :call rcom#TranscriptBuffer()<cr>'
 endif
 
 
 " if !hasmapto(':call rcom#EvaluateInBuffer(', 'n')
-"     nnoremap <buffer> <LocalLeader>r :call rcom#EvaluateInBuffer(getline('.'), "")<cr>gj
-"     nnoremap <buffer> <LocalLeader>R :call rcom#EvaluateInBuffer(getline('.'), "p")<cr>gj
+"     nnoremap <buffer> <LocalLeader>r :call rcom#EvaluateInBuffer(getline('.'), "")<cr>j
+"     nnoremap <buffer> <LocalLeader>R :call rcom#EvaluateInBuffer(getline('.'), "p")<cr>j
 " endif
 " if !hasmapto(':call rcom#EvaluateInBuffer(', 'i')
 "     inoremap <buffer> <LocalLeader>r <c-\><c-o>:call rcom#EvaluateInBuffer(getline('.'), "")<cr>
 "     inoremap <buffer> <LocalLeader>R <c-\><c-o>:call rcom#EvaluateInBuffer(getline('.'), "p")<cr>
 " endif
 " if !hasmapto(':call rcom#EvaluateInBuffer(', 'vsx')
-"     vnoremap <buffer> <LocalLeader>r :call rcom#EvaluateInBuffer(rcom#GetSelection(), "")<cr>gv
-"     vnoremap <buffer> <LocalLeader>R :call rcom#EvaluateInBuffer(rcom#GetSelection(), "p")<cr>gv
+"     vnoremap <buffer> <LocalLeader>r :call rcom#EvaluateInBuffer(rcom#GetSelection("v"), "")<cr>gv
+"     vnoremap <buffer> <LocalLeader>R :call rcom#EvaluateInBuffer(rcom#GetSelection("v"), "p")<cr>gv
 " endif
 
 

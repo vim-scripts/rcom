@@ -1,31 +1,45 @@
-*rcom.txt*          Evaluate R code via rcom
+*rcom.txt*          Evaluate R (www.r-project.org) code via rcom, rserve, screen, or tmux
                     Author: Tom Link, micathom at gmail com
 
-This plugin is still experimental. During development it made vim hang 
-from time to time. Please report any problem to the author. Thanks.
+The rcom ftplugin uses one of the following methods to evaluate R code:
 
-The rcom ftplugin uses the RCom interface (http://rcom.univie.ac.at)
-to R for sending code to a running instance of R. This way any R
-snippet can be easily evaluated in that instance of R.
+    - screen (default, also works under Windows with cygwin/mintty & Windows Rterm)
+    - screen or tmux via the screen vim plugin
+    - RServe (requires +ruby and the rserve-client rubygem)
+    - RCom interface (http://rcom.univie.ac.at; Windows only)
 
-After installation, interaction with R via rcom is enabled for all
+After installation, interaction with R is enabled for all
 buffers with filetype r. For other filetypes, you can use the
 functions |rcom#EvaluateInBuffer()|.
-
 
 Features:
 
     - Evaluate R code
-    - Omnicompletion for R
     - Maps for normal, visual, and insert mode
     - Keyword map (|K|)
     - Operator
 
+The following features are supported only with some methods:
+
+    - Omnicompletion for R
+    - Get return values from R
+
+Why use this plugin instead of r-plugin? It's hopefully easier to install, 
+easier to use.
+
 
 Caveats:
 
-Setting |rcom#reuse| = 1 is more stable. Depending on your version of 
-ruby & R & rcom, rcom#reuse = 0 could make your gvim crash.
+For the RCOM and rserve methods, it is recommended to set 
+|g:rcom#server|. Depending on your OS, your version of ruby & R & 
+rcom/rserve, this ftplugin may cause vim to hang or crash. When you run 
+the R code via a second instance of GVIM, you won't suffer from such 
+hickups. This also has the side effect that you can continue editing 
+while R evaluates the code.
+
+For the RCOM method, it is recommended to set |g:rcom#reuse| = 1 and to 
+start an instance of RGui (Windows only) before initiating any 
+communication via RCOM. 
 
 
 Maps~
@@ -38,32 +52,18 @@ normal, insert, and visual mode. There is also an operator (see
 
 Normal usage~
 
-    1. Start an instance of R GUI and load the image you want.
-    2. Open an R source file in VIM.
-    3. Type <c-cr> to evaluate the current line/visual area in R.
-    4. Type [count]+ or +{motion} to evaluate some text in R. (You can 
-       type ++ to invoke |+|.)
+    0.  Optional steps:
+            a. Prepare a running instance of RGui if using the RCOM 
+               method.
+            b. RCOM and screen methods: The results get printed in the R 
+               window. You might want to arrange the windows in a way, 
+               so that you can see VIM, R console and R graphic device 
+               at the same time.
+    1.  Open an R source file in VIM.
+    2a. Type <c-cr> to evaluate the current line/visual area in R.
+    2b. Type [count]+ or +{motion} to evaluate some text in R. (You can 
+        type ++ to invoke |+|.)
 
-By default, the results get printed in the R GUI window. You might want 
-to arrange the windows in a way, so that you can see VIM, R console and 
-R graphic device at the same time.
-
-
-Two modes~
-
-#1 Run as headless StatConnectorSrv:
-    This is only useful when used from another library as you won't see 
-    any output. Any output from a print command is inserted in the 
-    result. If there is a .Rdata image in the same directory as the 
-    current buffer, it is loaded.
-
-#2 Re-use a running instance of R:
-    If there is a .Rhistory file in the same directory as the current
-    buffer, it is loaded. This is the default mode when enabling an R 
-    buffer via |rcom#EvaluateInBuffer()|.
-
-You can only connect to one instance of R at a time. If there are
-several instances of R running ... well, good luck then. :-)
 
 
 -----------------------------------------------------------------------
@@ -71,15 +71,31 @@ Install~
 
 Requirements:
 
+    - R
+
+RCOM method:
+
     - Windows only (because of rcom)
     - A ruby-enabled version of vim -- :echo has('ruby') must print 1
-    - R
     - A suitable version of rcom (http://rcom.univie.ac.at). The rcom 
       library has to be loaded in vim, which should be the default 
       behaviour after installing rcom. The following code snippet must 
       not throw an error: >
 
       :ruby require 'win32ole'; r = WIN32OLE.new("StatConnectorSrv.StatConnector"); r.Init("R"); r.Close
+
+RServe method:
+
+    - A ruby-enabled version of vim -- :echo has('ruby') must print 1
+    - R rserve library installed
+    - rserve-client rubygem installed
+
+Screen method:
+
+    - screen or tmux
+    - Eric Van Dewoestine's screen vim plugin installed (see 
+      http://www.vim.org/scripts/script.php?script_id=2711)
+
 
 Edit the vba file and type: >
 
@@ -89,62 +105,107 @@ See :help vimball for details. If you have difficulties or use vim 7.0,
 please make sure, you have the current version of vimball
 (vimscript #1502) installed or update your runtime.
 
+If you plan to use the RCOM or rserve methods:
 After installation, you might want to check the value of
 |g:rcom#server| and maybe set it in your |vimrc| file. When this 
 variable is set, an instance of gvim will be started that acts as a 
 proxy so that the instance used for editing the R file won't be 
 blocked.
 
-Also available via git: http://github.com/tomtom/vimtlib/
+Also available via git: http://github.com/tomtom/rcom_vim
 
 
 ========================================================================
 Contents~
 
-        g:rcom#help ............. |g:rcom#help|
-        g:rcom#reuse ............ |g:rcom#reuse|
-        g:rcom#transcript_cmd ... |g:rcom#transcript_cmd|
-        g:rcom#log_cmd .......... |g:rcom#log_cmd|
-        g:rcom#server ........... |g:rcom#server|
-        g:rcom#server_wait ...... |g:rcom#server_wait|
-        rcom#Initialize ......... |rcom#Initialize()|
-        rcom#EvaluateInBuffer ... |rcom#EvaluateInBuffer()|
-        rcom#Evaluate ........... |rcom#Evaluate()|
-        rcom#Quit ............... |rcom#Quit()|
-        rcom#Complete ........... |rcom#Complete()|
-        rcom#Keyword ............ |rcom#Keyword()|
-        rcom#GetSelection ....... |rcom#GetSelection()|
-        rcom#Operator ........... |rcom#Operator()|
-        rcom#LogBuffer .......... |rcom#LogBuffer()|
-        :RComlog ................ |:RComlog|
-        :RComlogreset ........... |:RComlogreset|
-        rcom#TranscriptBuffer ... |rcom#TranscriptBuffer()|
-        :RComtranscript ......... |:RComtranscript|
-        rcom#Transcribe ......... |rcom#Transcribe()|
-        g:rcom_map .............. |g:rcom_map|
-        g:rcom_mapp ............. |g:rcom_mapp|
-        g:rcom_mapop ............ |g:rcom_mapop|
-        n_K ..................... |rcom-map-n_K|
+        g:rcom#method ................... |g:rcom#method|
+        g:rcom#help ..................... |g:rcom#help|
+        g:rcom#reuse .................... |g:rcom#reuse|
+        g:rcom#options .................. |g:rcom#options|
+        g:rcom#options_reuse_0 .......... |g:rcom#options_reuse_0|
+        g:rcom#options_reuse_1 .......... |g:rcom#options_reuse_1|
+        g:rcom#r_object_browser ......... |g:rcom#r_object_browser|
+        g:rcom#transcript_cmd ........... |g:rcom#transcript_cmd|
+        g:rcom#log_cmd .................. |g:rcom#log_cmd|
+        g:rcom#log_trim ................. |g:rcom#log_trim|
+        g:rcom#server ................... |g:rcom#server|
+        g:rcom#server_wait .............. |g:rcom#server_wait|
+        g:rcom#highlight_debug .......... |g:rcom#highlight_debug|
+        rcom#Log ........................ |rcom#Log()|
+        rcom#Quit ....................... |rcom#Quit()|
+        rcom#Complete ................... |rcom#Complete()|
+        rcom#Keyword .................... |rcom#Keyword()|
+        rcom#Info ....................... |rcom#Info()|
+        rcom#GetSelection ............... |rcom#GetSelection()|
+        rcom#Operator ................... |rcom#Operator()|
+        rcom#LogBuffer .................. |rcom#LogBuffer()|
+        :RComlog ........................ |:RComlog|
+        :RComlogreset ................... |:RComlogreset|
+        rcom#TranscriptBuffer ........... |rcom#TranscriptBuffer()|
+        :RComtranscript ................. |:RComtranscript|
+        rcom#Transcribe ................. |rcom#Transcribe()|
+        rcom#Initialize ................. |rcom#Initialize()|
+        rcom#Debug ...................... |rcom#Debug()|
+        rcom#Undebug .................... |rcom#Undebug()|
+        rcom#Evaluate ................... |rcom#Evaluate()|
+        rcom#EvaluateInBuffer ........... |rcom#EvaluateInBuffer()|
+        g:rcom_r_plugin_compatibility ... |g:rcom_r_plugin_compatibility|
+        n_<localleader>rt ............... |n_<localleader>rt|
+        n_<localleader>bb ............... |n_<localleader>bb|
+        g:rcom_map ...................... |g:rcom_map|
+        g:rcom_mapp ..................... |g:rcom_mapp|
+        g:rcom_mapop .................... |g:rcom_mapop|
+        n_K ............................. |rcom-map-n_K|
+        n_<LocalLeader>K ................ |rcom-map-n_<LocalLeader>K|
+        :RDebug ......................... |rcom-map-:RDebug|
+        :RUndebug ....................... |rcom-map-:RUndebug|
 
 
 ========================================================================
 autoload/rcom.vim~
 
+                                                    *g:rcom#method*
+g:rcom#method                  (default: 'screen')
+    The following methods to connect to R are supported:
+        screen ... Use Gnu Screen or tmux (see |g:rcom#screen#method|)
+        rserve ... Use rserve
+                 (requires vim's |ruby| interface and the 
+                 rserve-client ruby gem to be installed)
+        rcom ... Use rcom from http://rcom.univie.ac.at/
+                 (requires vim's |ruby| interface; as of plugin 
+                 version 0.3 the rcom method is untested)
+
                                                     *g:rcom#help*
 g:rcom#help                    (default: 1)
     Handling of help commands.
-    
+
       0 ... disallow
       1 ... allow
       2 ... Use RSiteSearch() instead of help() (this option requires 
             Internet access)
 
                                                     *g:rcom#reuse*
-g:rcom#reuse                   (default: 1)
+g:rcom#reuse                   (default: g:rcom#method == 'rcom')
     How to interact with R.
        0 ... Start a headless instance of R and transcribe the 
              interaction in VIM
        1 ... Re-use a running instance of R GUI (default)
+
+                                                    *g:rcom#options*
+g:rcom#options                 (default: 'warn = 1'.(has('gui_running') ? ', help_type = "html"' : ''))
+    Inital set of commands to send to R.
+
+                                                    *g:rcom#options_reuse_0*
+g:rcom#options_reuse_0         (default: '')
+    Inital set of R options to send to R if |g:rcom#reuse| is 0.
+
+                                                    *g:rcom#options_reuse_1*
+g:rcom#options_reuse_1         (default: '')
+    Inital set of R options to send to R if |g:rcom#reuse| is 1.
+
+                                                    *g:rcom#r_object_browser*
+g:rcom#r_object_browser        (default: 'str')
+    Default object browser.
 
                                                     *g:rcom#transcript_cmd*
 g:rcom#transcript_cmd          (default: s:IsRemoteServer() ? 'edit' : 'vert split')
@@ -154,6 +215,10 @@ g:rcom#transcript_cmd          (default: s:IsRemoteServer() ? 'edit' : 'vert spl
 g:rcom#log_cmd                 (default: 'split')
     Command used to display the transcript buffers.
 
+                                                    *g:rcom#log_trim*
+g:rcom#log_trim                (default: 1)
+    If true, remove printed items from the log.
+
                                                     *g:rcom#server*
 g:rcom#server                  (default: "")
     If non-empty, use this ex command to start an instance of GVIM 
@@ -161,7 +226,7 @@ g:rcom#server                  (default: "")
     will be evaluated via |:execute|.
     The string may contain %s where rcom-specific options should be 
     included.
-    
+
     Example: >
       let g:rcom#server = 'silent ! start "" gvim.exe "+set lines=18" "+winpos 1 700" %s'
       let g:rcom#server = 'silent ! gvim %s &'
@@ -171,29 +236,12 @@ g:rcom#server                  (default: "")
 g:rcom#server_wait             (default: 10)
     Seconds to wait after starting |rcom#server|.
 
-                                                    *rcom#Initialize()*
-rcom#Initialize(?reuse=g:rcom#reuse)
-    Connect to the R interpreter for the current buffer.
-    Usually not called by the user.
+                                                    *g:rcom#highlight_debug*
+g:rcom#highlight_debug         (default: 'SpellRare')
+    Highlight group for debugged functions.
 
-                                                    *rcom#EvaluateInBuffer()*
-rcom#EvaluateInBuffer(rcode, ?mode='')
-    Initialize the current buffer if necessary and evaluate some R code in 
-    a running instance of R GUI.
-    
-    If there is a remote gvim server named RCOM running (see 
-    |--servername|), evaluate R code remotely. This won't block the 
-    current instance of gvim.
-    
-    See also |rcom#Evaluate()|.
-
-                                                    *rcom#Evaluate()*
-rcom#Evaluate(rcode, ?mode='')
-    rcode can be a string or an array of strings.
-    mode can be one of
-      p ... Print the result
-      r ... Always return a result
-      . ... Behaviour depends on the context
+                                                    *rcom#Log()*
+rcom#Log(text)
 
                                                     *rcom#Quit()*
 rcom#Quit(?bufnr=bufnr('%'))
@@ -208,6 +256,10 @@ rcom#Complete(findstart, base)
                                                     *rcom#Keyword()*
 rcom#Keyword(...)
     Display help on the word under the cursor.
+
+                                                    *rcom#Info()*
+rcom#Info(...)
+    Inspect the word under the cursor.
 
                                                     *rcom#GetSelection()*
 rcom#GetSelection(mode, ?mbeg="'<", ?mend="'>", ?opmode='selection')
@@ -237,9 +289,49 @@ rcom#TranscriptBuffer()
                                                     *rcom#Transcribe()*
 rcom#Transcribe(input, output)
 
+                                                    *rcom#Initialize()*
+rcom#Initialize(?reuse=g:rcom#reuse)
+    Connect to the R interpreter for the current buffer.
+    Usually not called by the user.
+
+                                                    *rcom#Debug()*
+rcom#Debug(fn)
+    Toggle the debug status of a function.
+
+                                                    *rcom#Undebug()*
+rcom#Undebug(fn)
+    Undebug a debugged function.
+
+                                                    *rcom#Evaluate()*
+rcom#Evaluate(rcode, ?mode='')
+    rcode can be a string or an array of strings.
+    mode can be one of
+      p ... Print the result
+      r ... Always return a result
+
+                                                    *rcom#EvaluateInBuffer()*
+rcom#EvaluateInBuffer(rcode, ?mode='')
+    Initialize the current buffer if necessary and evaluate some R code in 
+    a running instance of R GUI.
+
+    If there is a remote gvim server named RCOM running (see 
+    |--servername|), evaluate R code remotely. This won't block the 
+    current instance of gvim.
+
+    See also |rcom#Evaluate()|.
+
 
 ========================================================================
 ftplugin/r/rcom.vim~
+
+                                                    *g:rcom_r_plugin_compatibility*
+g:rcom_r_plugin_compatibility  (default: 0)
+
+                                                    *n_<localleader>rt*
+n_<localleader>rt ... :call rcom#Keyword()<cr>
+
+                                                    *n_<localleader>bb*
+n_<localleader>bb ... <plug>rcom_op
 
                                                     *g:rcom_map*
 g:rcom_map                     (default: "<c-cr>")
@@ -255,20 +347,35 @@ g:rcom_mapp                    (default: "<c-s-cr>")
 g:rcom_mapop                   (default: "+")
     The rcom operator map.
     Set this to "", to prevent rcom from defining maps.
-    
+
     This defines the following maps (where # represents the value of 
     g:rcom_mapop):
-    
+
         #{motion} ... Operator
         #.        ... Evaluate the current line (normal mode)
         [visual]# ... Evaluate the visual area
         #p        ... Toggle printing for the above maps
+        #d        ... Toggle a function's debug status
         #l        ... Open the log window
         ##        ... Evaluate the |maparg| previously mapped to #
 
                                                     *rcom-map-n_K*
 n_K ... :call rcom#Keyword()<cr>
     See |rcom#Keyword()| and |K|.
+
+                                                    *rcom-map-n_<LocalLeader>K*
+n_<LocalLeader>K ... :call rcom#Info()<cr>
+    Inspect an R object -- see |rcom#Info()|.
+
+                                                    *rcom-map-:RDebug*
+RDebug [FUNCTION]
+    Buffer-local command.
+    Debug the function under cursor.
+
+                                                    *rcom-map-:RUndebug*
+RUndebug [FUNCTION]
+    Buffer-local command.
+    Undebug the function under cursor.
 
 
 
